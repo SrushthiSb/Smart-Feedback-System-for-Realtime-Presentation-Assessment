@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Feedback</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin: 0;
+        }
+
+        .feedback-container {
+            background-color: white;
+            margin: 20px auto;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+        }
+
+        .feedback-container h2 {
+            color: #4CAF50;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+        }
+
+        .feedback-container p {
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .score {
+            font-weight: bold;
+            color: #4CAF50;
+        }
+
+        .overall-score {
+            font-size: 20px;
+            font-weight: bold;
+            color: #4CAF50;
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px;
+            border-top: 2px solid #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <h1>Feedback</h1>
+    
+    <div class="feedback-container">
+        <h2>Feedback</h2>
+        <p>Gesture Score: <span class="score">{{ feedback.gesture_score }}%</span></p>
+        <p>Posture Score: <span class="score">{{ feedback.posture_score }}%</span></p>
+        <p>Volume Score: <span class="score">{{ feedback.volume_score }}%</span></p>
+        <p>Pace Score: <span class="score">{{ feedback.pace_score }}%</span></p>
+        <p>Emotion Score: <span class="score">{{ feedback.emotion_score }}%</span></p>
+        <div class="overall-score">
+            Overall Score: {{ feedback.overall_score }}%
+        </div>
+    </div>
+    
+    <script>
+        const videoId = '{{ video_id }}';
+        const feedbackStatusUrl = `{% url "feedback_status" video_id=video_id %}`;
+
+        // Check local storage to see if we've already loaded feedback
+        const hasLoadedFeedback = sessionStorage.getItem('hasLoadedFeedback') === 'true';
+
+        if (!hasLoadedFeedback) {
+            function checkProcessingStatus() {
+                fetch(feedbackStatusUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'complete') {
+                            // Set flag to prevent future reloads
+                            sessionStorage.setItem('hasLoadedFeedback', 'true');
+                            window.location.reload();  // Refresh the page to show feedback
+                        } else {
+                            setTimeout(checkProcessingStatus, 5000);  // Check again in 5 seconds
+                        }
+                    });
+            }
+
+            // Start checking the status when the page loads
+            checkProcessingStatus();
+        }
+    </script>
+</body>
+</html>

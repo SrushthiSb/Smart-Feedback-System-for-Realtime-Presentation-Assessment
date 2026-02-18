@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Feed</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .container {
+            text-align: center;
+            max-width: 800px;
+            width: 100%;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        #video-feed {
+            position: relative;
+            display: inline-block;
+            width: 100%;
+            max-width: 800px;
+            background-color: #000;
+        }
+        #video-frame {
+            width: 100%;
+            border: 5px solid #333;
+        }
+        #loading-message {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #fff;
+            font-size: 18px;
+            font-weight: bold;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 5px;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Processing Video Feed...</h1>
+        <div id="video-feed">
+            <!-- Use an img tag to stream the video -->
+            <img id="video-frame" src="{% url 'video_feed' video_id=video_id %}" />
+            <div id="loading-message">Loading feedback attributes...</div>
+        </div>
+    </div>
+
+    <script>
+        function checkFeedbackStatus(videoId) {
+            fetch(`/feedback_status/${videoId}/`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'complete') {
+                        window.location.href = `/feedback/${videoId}/`;
+                    } else {
+                        setTimeout(() => checkFeedbackStatus(videoId), 5000); // Poll every 5 seconds
+                    }
+                })
+                .catch(error => console.error('Error checking feedback status:', error));
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const videoId = "{{ video_id }}";
+            checkFeedbackStatus(videoId);
+        });
+    </script>
+</body>
+</html>
